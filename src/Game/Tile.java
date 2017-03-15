@@ -4,6 +4,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
+import javafx.util.Duration;
 
 public class Tile extends Button {
 	static Tile[][] tile;
@@ -13,7 +14,7 @@ public class Tile extends Button {
 	private boolean mine;
 	int Xaxis = 0;
 	int Yaxis = 0;
-	ImageView unclicked, num0, num1, num2, num3, num4, num5, num6, num7, num8, flag, questionMark;
+	ImageView unclicked, num0, num1, num2, num3, num4, num5, num6, num7, num8, flag, questionMark, mineMisflagged;
 	ImageView mineRevealed;
 	ImageView mineDeath;
 
@@ -40,6 +41,8 @@ public class Tile extends Button {
 		mineDeath = new ImageView(new Image("res/mine-red.png"));
 		mineDeath.fitHeightProperty().bind(this.heightProperty());
 		mineDeath.fitWidthProperty().bind(this.widthProperty());
+		
+	
 
 		flag = new ImageView(new Image("res/flag.png"));
 		flag.fitHeightProperty().bind(this.heightProperty());
@@ -86,18 +89,23 @@ public class Tile extends Button {
 		num8.fitWidthProperty().bind(this.widthProperty());
 
 		setGraphic(unclicked);
-
+		setOnMousePressed(e -> {
+			Play.setTopBar("face-O.png");
+		});
+		setOnMouseReleased( e -> {
+			Play.setTopBar("face-smile.png");
+		});
 		setOnMouseClicked(e -> {
 			tile = Play.getTile();
 			MouseButton button = e.getButton();
 			if (button == MouseButton.PRIMARY) {
+				
 				if (Play.firstClick) {
 					Play.firstClick = false;
 					Play.getFirstClick(this.Xaxis, this.Yaxis);
 					Play.setMines(Play.difficulty);
 					firstClear(this.Xaxis, this.Yaxis);
-					// Play.initBoardBg();
-
+					
 				}  
 				if (!this.isFlag() && !disableClick()) {
 					if (this.isMine()) {
@@ -130,81 +138,118 @@ public class Tile extends Button {
 		});
 
 	}
+	
 	private void checkMineSweeper(){
 		int bombCount = 0;
 		int flagCount =0;
 		int y = this.Yaxis;
 		int x = this.Xaxis;
-		if (y > 0 && tile[x][y - 1].isMine()) {
-		bombCount++;
+		if (y > 0){
+			if(tile[x][y - 1].isMine()) 
+				bombCount++;
 			if(tile[x][y - 1].isFlag())
 				flagCount++;
 		}
-		if (y > 0 && x > 0 && tile[x - 1][y - 1].isMine()) {
-			bombCount++;
+		if (y > 0 && x > 0){
+			if( tile[x - 1][y - 1].isMine()) 
+				bombCount++;
 			if(tile[x - 1][y - 1].isFlag())
 				flagCount++;
-		
 		}
-		if (y > 0 && x < tile.length - 1 && tile[x + 1][y - 1].isMine()) {
+		if (y > 0 && x < tile.length - 1){
+			if (tile[x + 1][y - 1].isMine()) 
 			bombCount++;
 			if(tile[x + 1][y - 1].isFlag())
 				flagCount++;
-			
 		}
-		if (x > 0 && y < tile[0].length - 1 && tile[x - 1][y + 1].isMine()) {
+		if (x > 0 && y < tile[0].length - 1){
+			if( tile[x - 1][y + 1].isMine()) 
 			bombCount++;
 			if(tile[x - 1][y +1].isFlag())
 				flagCount++;
 		}
-		if (y < tile[0].length - 1 && x < tile.length - 1 && tile[x + 1][y + 1].isMine()) {
+		if (y < tile[0].length - 1 && x < tile.length - 1){
+			if(tile[x + 1][y + 1].isMine()) 
 			bombCount++;
 			if(tile[x + 1][y + 1].isFlag())
 				flagCount++;
-		
 		}
-		if (x > 0 && tile[x - 1][y].isMine()) {
+		if (x > 0){
+			if(tile[x - 1][y].isMine()) 
 			bombCount++;
 			if(tile[x - 1][y].isFlag())
 				flagCount++;
 		}
-		if (x < tile.length - 1 && tile[x + 1][y].isMine()) {
+		if (x < tile.length - 1){ 
+			if( tile[x + 1][y].isMine()) 
 			bombCount++;
 			if(tile[x+1][y].isFlag())
 				flagCount++;
-			
 		}
-		if (y < tile[0].length - 1 && tile[x][y + 1].isMine()) {
+		if (y < tile[0].length - 1){
+			if(tile[x][y + 1].isMine()) 
 			bombCount++;
 			if(tile[x][y + 1].isFlag())
 				flagCount++;
 		}
-		if(flagCount > 0 && (bombCount == flagCount) && this.getState() == 0){
-			if (y > 0 && !tile[x][y - 1].isMine()) {
-				tile[x][y-1].checkMines();
+		if(flagCount == bombCount && this.getState() != 4){
+			if (y > 0 ) {
+					if(tile[x][y-1].isMine() && !tile[x][y-1].isFlag()){
+						tile[x][y-1].setGraphic(mineDeath);tile[x][y-1].setState(5);
+						gameOver();
+					}else
+						tile[x][y-1].checkMines();
 				}
-				if (y > 0 && x > 0 && !tile[x - 1][y - 1].isMine()) {
+				if (y > 0 && x > 0) {
+					if(tile[x-1][y-1].isMine() && !tile[x-1][y-1].isFlag()){
+						tile[x-1][y-1].setGraphic(mineDeath);tile[x-1][y-1].setState(5);
+						gameOver();
+					}else
 					tile[x-1][y-1].checkMines();
 				
 				}
-				if (y > 0 && x < tile.length - 1 && !tile[x + 1][y - 1].isMine()) {
+				if (y > 0 && x < tile.length - 1 ) {
+					if(tile[x+1][y-1].isMine() && !tile[x+1][y-1].isFlag()){
+						tile[x+1][y-1].setGraphic(mineDeath);tile[x+1][y-1].setState(5);
+						gameOver();
+					}else
 					tile[x+1][y-1].checkMines();
 					
 				}
-				if (x > 0 && y < tile[0].length - 1 && !tile[x - 1][y + 1].isMine()) {
-					tile[x-x][y+1].checkMines();
+				if (x > 0 && y < tile[0].length - 1 ) {
+					if(tile[x-1][y+1].isMine() && !tile[x-1][y+1].isFlag()){
+						tile[x-1][y+1].setGraphic(mineDeath);tile[x-1][y+1].setState(5);
+						gameOver();
+					}else
+					tile[x-1][y+1].checkMines();
 				}
-				if (y < tile[0].length - 1 && x < tile.length - 1 && !tile[x + 1][y + 1].isMine()) {
+				if (y < tile[0].length - 1 && x < tile.length - 1 ) {
+					if(tile[x+1][y+1].isMine() && !tile[x+1][y+1].isFlag()){
+						tile[x][y+1].setGraphic(mineDeath);tile[x][y+1].setState(5);
+						gameOver();
+					}else
 					tile[x+1][y+1].checkMines();
 				
 				}
-				if (x > 0 && !tile[x - 1][y].isMine()) {
+				if (x > 0 ) {
+					if(tile[x-1][y].isMine() && !tile[x-1][y].isFlag()){
+						tile[x-1][y].setGraphic(mineDeath);tile[x-1][y].setState(5);
+						gameOver();
+					}else
 					tile[x-1][y].checkMines();
 				}
-				if (x < tile.length - 1 && !tile[x + 1][y].isMine()) {
+				if (x < tile.length - 1) {
+					if(tile[x+1][y].isMine() && !tile[x+1][y].isFlag()){
+						tile[x+1][y].setGraphic(mineDeath);tile[x+1][y].setState(5);
+						gameOver();
+					}else
 					tile[x+1][y].checkMines();
 				}
 				if (y < tile[0].length - 1 && !tile[x][y + 1].isMine()) {
+					if(tile[x][y+1].isMine() && !tile[x][y+1].isFlag()){
+						tile[x][y+1].setGraphic(mineDeath);tile[x][y+1].setState(5);
+						gameOver();
+					}else
 					tile[x][y+1].checkMines();
 				}
 		}
@@ -212,38 +257,47 @@ public class Tile extends Button {
 
 	private void firstClear(int x, int y) {
 		// SO NEAT AND CLEAN GOOD JOB
+		
 		Play.tilesRevealed++;
-		//System.out.println(x + "cccccccccccccccccccccccccccccccc" + y);
-		if (x < 0 || x > tile.length - 1 || y < 0 || y > tile[0].length - 1 || tile[x][y].getState() != 0)
+		
+		
+		if (x < 0 || x > tile.length - 1 || y < 0 || y > tile[0].length - 1 || tile[x][y].getState() != 0){
 			return;
-
+		}
+		
+		
+		
+		
+		
 		tile[x][y].checkMines();
 		if (!tile[x][y].isMine() && tile[x][y].getState() == 10) {
 			tile[x][y].setState(1);
-			//System.out.print("X: " + tile[x][y].Xaxis + " Y:" + tile[x][y].Yaxis);
-			if (y > 0) {
+			
+			if (y > 0) 
 				firstClear(x, y - 1);
-				if (x > 0)
-					firstClear(x - 1, y - 1);
-				if (x > tile.length)
-					firstClear(x + 1, y - 1);
-			}
-			if (x > 0) {
+			
+			if (x > 0 && y > 0)
+				firstClear(x - 1, y - 1);
+			
+			if (x > 0) 
 				firstClear(x - 1, y);
-				if (y < tile[0].length) {
-					firstClear(x - 1, y + 1);
-
-					if (x < tile[0].length)
-						firstClear(x + 1, y + 1);
-				}
-			}
+			
+			if (x < tile.length && y > 0)
+				firstClear(x + 1, y - 1);
+			
+			if (y < tile[0].length && x > 0) 
+				firstClear(x - 1, y + 1);
+			
+			if (x < tile.length && y < tile[0].length)
+				firstClear(x + 1, y + 1);
+			
 			if (x < tile.length)
 				firstClear(x + 1, y);
-
+			
 			if (y < tile[0].length)
 				firstClear(x, y + 1);
 
-			tile[x][y].checkMines();
+			//tile[x][y].checkMines();
 			return;
 
 		} else {
@@ -251,34 +305,7 @@ public class Tile extends Button {
 		}
 	}
 
-	/*
-	 * private void firstClear(int x, int y) { // Try returning firstClear if(x
-	 * < 0 || x > tile[0].length || y < 0 || y > tile[0].length) return;
-	 * 
-	 * 
-	 * if (y > 0 && !tile[x][y - 1].isMine() && tile[x][y-1].getState() ==0){
-	 * firstClear(x, y - 1); //checkMines(x, y - 1); } if (y > 0 && x > 0 &&
-	 * !tile[x - 1][y - 1].isMine()&& tile[x-1][y-1].getState() ==0) {
-	 * firstClear(x - 1, y - 1); //checkMines(x - 1, y - 1); } if (y > 0 && x <
-	 * tile.length - 1 && !tile[x + 1][y - 1].isMine()&&
-	 * tile[x+1][y-1].getState() ==0) { firstClear(x + 1, y - 1); //checkMines(x
-	 * + 1, y - 1); } if (x > 0 && y < tile[0].length - 1 && !tile[x - 1][y +
-	 * 1].isMine()&& tile[x-1][y+1].getState() ==0) { firstClear(x - 1, y + 1);
-	 * //checkMines(x - 1, y + 1); } if (y < tile[0].length - 1 && x <
-	 * tile.length - 1 && !tile[x + 1][y + 1].isMine()&&
-	 * tile[x+1][y+1].getState() ==0) { firstClear(x + 1, y + 1); //checkMines(x
-	 * + 1, y + 1); } if (x > 0 && !tile[x - 1][y].isMine()&&
-	 * tile[x-1][y].getState() ==0) { firstClear(x - 1, y); //checkMines(x - 1,
-	 * y); } if (x < tile.length - 1 && !tile[x + 1][y].isMine()&&
-	 * tile[x+1][y].getState() ==0) { firstClear(x + 1, y); //checkMines(x + 1,
-	 * y); } if (y < tile[0].length - 1 && !tile[x][y + 1].isMine()&&
-	 * tile[x][y+1].getState() ==0) { firstClear(x, y + 1); //checkMines(x, y +
-	 * 1); }
-	 * 
-	 * checkMines(x,y); return;
-	 * 
-	 * }
-	 */
+
 	public static void checkWin() {
 		int win = 0;
 		int numTiles = (tile.length * tile[0].length);
@@ -290,8 +317,7 @@ public class Tile extends Button {
 
 			}
 		}
-		System.out.println(win + "--"   + "numTiles" + numTiles + "numMines" + Play.numMine + ": " +(numTiles-Play.numMine));
-		System.out.println("tilesRevealed" + Play.tilesRevealed);
+		
 		if (win == (numTiles - Play.numMines)) {
 			win();
 		}
@@ -302,9 +328,7 @@ public class Tile extends Button {
 
 		int y = this.Yaxis;
 		int x = this.Xaxis;
-		//System.out.println("X: " + x + " Y: " + y);
-		//System.out.println(this.isMine() ? "True" : "False");
-
+		
 		if (y > 0 && tile[x][y - 1].isMine()) {
 			bombCount++;
 		}
@@ -394,7 +418,7 @@ public class Tile extends Button {
 
 		if (!this.isMine()) {
 			if (bombCount == 0) {
-				//System.out.println("ZERo");
+				
 				firstClear(x, y);
 				tile[x][y].setState(10);
 
@@ -453,9 +477,18 @@ public class Tile extends Button {
 		for (int i = 0; i < tile.length; i++) {
 			for (int j = 0; j < tile[0].length; j++) {
 				if (tile[i][j].isMine() && tile[i][j].getState() != 5) {
-					tile[i][j].setGraphic(new ImageView(new Image("res/mine-grey.png")));
+					ImageView temp = new ImageView(new Image("res/mine-grey.png"));
+					temp.fitHeightProperty().bind(this.heightProperty());
+					temp.fitWidthProperty().bind(this.widthProperty());
+					tile[i][j].setGraphic(temp);
 					 Play.minesRevealed++;
+				}
+				if(tile[i][j].isFlag() && !tile[i][j].isMine()){
+					ImageView temp = new ImageView(new Image("res/mine-misFlagged.png"));
+					temp.fitHeightProperty().bind(this.heightProperty());
+					temp.fitWidthProperty().bind(this.widthProperty());
 
+					tile[i][j].setGraphic(temp);
 				}
 			}
 		}
